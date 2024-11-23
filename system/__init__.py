@@ -7,4 +7,4 @@ system_bp = Blueprint('system', __name__)
 from .cpu import *
 from .memory import *
 from .uptime import *
-
+from .network import *
