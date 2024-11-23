@@ -1,9 +1,9 @@
 from flask import Flask
-from system import system_bp  # Import the Blueprint
+from system import system_bp  # Import the system Blueprint
 
 app = Flask(__name__)
 
-# Register the Blueprint
+# Register the system Blueprint
 app.register_blueprint(system_bp)
 
 if __name__ == '__main__':

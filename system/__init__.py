@@ -3,6 +3,8 @@ from flask import Blueprint
 # Define the Blueprint
 system_bp = Blueprint('system', __name__)
 
-# Import the routes (we'll create them next)
-from .routes import *
+# Import routes
+from .cpu import *
+from .memory import *
+from .uptime import *
 
