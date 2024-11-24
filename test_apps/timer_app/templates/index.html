@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .timer {
+            font-size: 48px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Timer</h1>
+    <div class="timer" id="timer">0.00</div>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="stopTimer()">Stop</button>
+    <button onclick="resetTimer()">Reset</button>
+
+    <script>
+        let timerElement = document.getElementById("timer");
+
+        function fetchElapsedTime() {
+            fetch("/elapsed")
+                .then(response => response.json())
+                .then(data => {
+                    timerElement.textContent = data.elapsed_time.toFixed(2);
+                });
+        }
+
+        function startTimer() {
+            fetch("/start", { method: "POST" });
+        }
+
+        function stopTimer() {
+            fetch("/stop", { method: "POST" });
+        }
+
+        function resetTimer() {
+            fetch("/reset", { method: "POST" });
+        }
+
+        setInterval(fetchElapsedTime, 100);
+    </script>
+</body>
+</html>
+

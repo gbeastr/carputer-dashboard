@@ -3,7 +3,7 @@
 import gps
 import threading
 from flask import jsonify
-from . import system_bp
+from . import trip_bp
 
 # Shared GPS data dictionary
 gps_data = {
@@ -62,7 +62,7 @@ def gps_polling():
 gps_thread = threading.Thread(target=gps_polling, daemon=True)
 gps_thread.start()
 
-@system_bp.route('/gps', methods=['GET'])
+@trip_bp.route('/gps', methods=['GET'])
 def gps_metrics():
     """
     GPS endpoint to fetch real-time GPS data.
