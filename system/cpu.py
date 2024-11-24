@@ -2,7 +2,7 @@ from flask import jsonify
 import psutil
 from . import system_bp
 
-@system_bp.route('/system/cpu', methods=['GET'])
+@system_bp.route('/cpu', methods=['GET'])
 def cpu_metrics():
     cpu_load = psutil.cpu_percent(interval=0)
     temperatures = psutil.sensors_temperatures()

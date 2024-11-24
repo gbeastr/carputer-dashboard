@@ -6,6 +6,6 @@ app = Flask(__name__)
 # Register the system Blueprint
 app.register_blueprint(system_bp)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8085)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8085)
 
