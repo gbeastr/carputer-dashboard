@@ -5,3 +5,4 @@ trip_bp = Blueprint('trip', __name__, url_prefix="/trip")
 
 # Import routes and functions
 from .gps import *
+from .metrics import *
