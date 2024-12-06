@@ -64,25 +64,66 @@
     </div>
 
     <script>
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
         async function fetchMetrics() {
             const dashboard = document.getElementById("dashboard");
             try {
-                // Fetch trip metrics
-                const response = await fetch("/trip/metrics");
-                const data = await response.json();
+                // Fetch both trip and GPS data in parallel
+                const [tripResponse, gpsResponse] = await Promise.all([
+                    fetch("/trip/metrics"),
+                    fetch("/trip/gps")
+                ]);
 
-                // Update button states
-                document.getElementById("startBtn").disabled = data.running;
-                document.getElementById("stopBtn").disabled = !data.running;
-                document.getElementById("resetBtn").disabled = data.running;
+                const [tripData, gpsData] = await Promise.all([
+                    tripResponse.json(),
+                    gpsResponse.json()
+                ]);
 
-                // Clear the dashboard and display updated metrics
+                // Update button states based on tripData
+                document.getElementById("startBtn").disabled = tripData.running;
+                document.getElementById("stopBtn").disabled = !tripData.running;
+                document.getElementById("resetBtn").disabled = tripData.running;
+
+                // Clear the dashboard
                 dashboard.innerHTML = "";
-                for (const [key, value] of Object.entries(data)) {
+
+                // Extract required data
+                const currentSpeed = (typeof gpsData.speed === 'number') ? `${gpsData.speed.toFixed(2)} mph` : 'N/A';
+                const satellites = gpsData.satellites_used !== undefined ? gpsData.satellites_used : 'N/A';
+                const distance = `${tripData.distance_covered.toFixed(2)} miles`;
+                const elapsedTime = formatTime(tripData.elapsed_time);
+                const stoppedTime = formatTime(tripData.stopped_time);
+                const movingAvgSpeed = `${tripData.moving_average_speed.toFixed(2)} mph`;
+
+                // Overall average speed = distance_covered / (elapsed_time in hours)
+                let overallAvgSpeed = 'N/A';
+                if (tripData.elapsed_time > 0) {
+                    const hours = tripData.elapsed_time / 3600;
+                    overallAvgSpeed = (tripData.distance_covered / hours).toFixed(2) + ' mph';
+                }
+
+                const metrics = {
+                    "Current Speed": currentSpeed,
+                    "Satellite Locks": satellites,
+                    "Distance Traveled": distance,
+                    "Elapsed Time": elapsedTime,
+                    "Moving Average Speed": movingAvgSpeed,
+                    "Overall Average Speed": overallAvgSpeed,
+                    "Stopped Time": stoppedTime
+                };
+
+                // Display the metrics
+                for (const [key, value] of Object.entries(metrics)) {
                     const card = document.createElement("div");
                     card.className = "card";
                     card.innerHTML = `
-                        <h3>${key.replace("_", " ").toUpperCase()}</h3>
+                        <h3>${key}</h3>
                         <p>${value}</p>
                     `;
                     dashboard.appendChild(card);
@@ -107,9 +148,9 @@
             fetchMetrics();
         }
 
-        // Refresh metrics every 5 seconds
+        // Refresh metrics every 0.5 seconds
         fetchMetrics();
-        setInterval(fetchMetrics, 5000);
+        setInterval(fetchMetrics, 500);
     </script>
 </body>
 </html>

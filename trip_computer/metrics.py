@@ -1,38 +1,63 @@
 import time
+import math
 from flask import jsonify
 from . import trip_bp
+from .gps import gps_data
 
-# Trip data to track
 trip_data = {
-    "start_time": None,       # When the trip started
-    "elapsed_time": 0,        # Total time for the trip (seconds)
-    "distance_covered": 0.0,  # Distance covered (miles)
-    "running": False,         # Whether the trip is currently running
-    "stopped_time": 0.0,      # Total time spent stopped (seconds)
-    "moving_average_speed": 0.0, # Average speed while moving (mph)
+    "start_time": None,
+    "elapsed_time": 0,
+    "distance_covered": 0.0,
+    "running": False,
+    "stopped_time": 0.0,
+    "moving_average_speed": 0.0,
+    "last_update_time": None,
+    "last_lat": None,
+    "last_lon": None,
+    "cumulative_speed": 0.0,
+    "speed_count": 0
 }
 
-# Start the trip
+def haversine(lat1, lon1, lat2, lon2):
+    R = 3958.8
+    dLat = math.radians(lat2 - lat1)
+    dLon = math.radians(lon2 - lon1)
+    a = (math.sin(dLat/2)**2) + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * (math.sin(dLon/2)**2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c
+
 @trip_bp.route('/start', methods=['POST'])
 def start_trip():
     if trip_data["running"]:
         return jsonify({"status": "trip already running"}), 400
     if trip_data["elapsed_time"] > 0 or trip_data["distance_covered"] > 0:
         return jsonify({"status": "please reset trip before starting a new one"}), 400
-    trip_data["start_time"] = time.time() - trip_data["elapsed_time"]
-    trip_data["running"] = True
+    
+    current_time = time.time()
+    trip_data.update({
+        "start_time": current_time,
+        "elapsed_time": 0,
+        "distance_covered": 0.0,
+        "running": True,
+        "stopped_time": 0.0,
+        "moving_average_speed": 0.0,
+        "cumulative_speed": 0.0,
+        "speed_count": 0,
+        "last_update_time": current_time,
+        "last_lat": None,
+        "last_lon": None
+    })
     return jsonify({"status": "trip started"})
 
-# Stop the trip
 @trip_bp.route('/stop', methods=['POST'])
 def stop_trip():
     if not trip_data["running"]:
         return jsonify({"status": "trip is not running"}), 400
-    trip_data["elapsed_time"] = time.time() - trip_data["start_time"]
+    current_time = time.time()
+    trip_data["elapsed_time"] = current_time - trip_data["start_time"]
     trip_data["running"] = False
     return jsonify({"status": "trip stopped"})
 
-# Reset the trip
 @trip_bp.route('/reset', methods=['POST'])
 def reset_trip():
     if trip_data["running"]:
@@ -44,11 +69,62 @@ def reset_trip():
         "running": False,
         "stopped_time": 0.0,
         "moving_average_speed": 0.0,
+        "last_update_time": None,
+        "last_lat": None,
+        "last_lon": None,
+        "cumulative_speed": 0.0,
+        "speed_count": 0
     })
     return jsonify({"status": "trip reset"})
 
-# Get trip metrics
 @trip_bp.route('/metrics', methods=['GET'])
 def get_metrics():
-    # Return the current state of trip data
-    return jsonify(trip_data)
+    if trip_data["running"]:
+        current_time = time.time()
+        delta = 0
+        if trip_data["last_update_time"] is not None:
+            delta = current_time - trip_data["last_update_time"]
+        trip_data["elapsed_time"] = current_time - trip_data["start_time"]
+        
+        lat = gps_data.get("latitude", None)
+        lon = gps_data.get("longitude", None)
+        speed_mph = gps_data.get("speed", 0)
+        
+        if (trip_data["last_lat"] is not None and 
+            trip_data["last_lon"] is not None and
+            isinstance(lat, (float,int)) and
+            isinstance(lon, (float,int))):
+            dist = haversine(trip_data["last_lat"], trip_data["last_lon"], lat, lon)
+            if speed_mph > 0.1:
+                trip_data["distance_covered"] += dist
+        
+        if speed_mph > 0.1:
+            trip_data["cumulative_speed"] += speed_mph
+            trip_data["speed_count"] += 1
+            if trip_data["speed_count"] > 0:
+                trip_data["moving_average_speed"] = trip_data["cumulative_speed"] / trip_data["speed_count"]
+        else:
+            trip_data["stopped_time"] += delta
+        
+        if isinstance(lat, (float,int)) and isinstance(lon, (float,int)):
+            trip_data["last_lat"] = lat
+            trip_data["last_lon"] = lon
+        trip_data["last_update_time"] = current_time
+
+    overall_average_speed = 0
+    if trip_data["elapsed_time"] > 0:
+        hours = trip_data["elapsed_time"] / 3600
+        if hours > 0:
+            overall_average_speed = trip_data["distance_covered"] / hours
+
+    response = {
+        "running": trip_data["running"],
+        "elapsed_time": trip_data["elapsed_time"],
+        "distance_covered": trip_data["distance_covered"],
+        "stopped_time": trip_data["stopped_time"],
+        "moving_average_speed": trip_data["moving_average_speed"],
+        "overall_average_speed": overall_average_speed
+    }
+
+    return jsonify(response)
+
