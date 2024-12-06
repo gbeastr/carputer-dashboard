@@ -15,22 +15,28 @@ trip_data = {
 # Start the trip
 @trip_bp.route('/start', methods=['POST'])
 def start_trip():
-    if not trip_data["running"]:
-        trip_data["start_time"] = time.time() - trip_data["elapsed_time"]
-        trip_data["running"] = True
+    if trip_data["running"]:
+        return jsonify({"status": "trip already running"}), 400
+    if trip_data["elapsed_time"] > 0 or trip_data["distance_covered"] > 0:
+        return jsonify({"status": "please reset trip before starting a new one"}), 400
+    trip_data["start_time"] = time.time() - trip_data["elapsed_time"]
+    trip_data["running"] = True
     return jsonify({"status": "trip started"})
 
 # Stop the trip
 @trip_bp.route('/stop', methods=['POST'])
 def stop_trip():
-    if trip_data["running"]:
-        trip_data["elapsed_time"] = time.time() - trip_data["start_time"]
-        trip_data["running"] = False
+    if not trip_data["running"]:
+        return jsonify({"status": "trip is not running"}), 400
+    trip_data["elapsed_time"] = time.time() - trip_data["start_time"]
+    trip_data["running"] = False
     return jsonify({"status": "trip stopped"})
 
 # Reset the trip
 @trip_bp.route('/reset', methods=['POST'])
 def reset_trip():
+    if trip_data["running"]:
+        return jsonify({"status": "cannot reset while trip is running"}), 400
     trip_data.update({
         "start_time": None,
         "elapsed_time": 0,
@@ -46,4 +52,3 @@ def reset_trip():
 def get_metrics():
     # Return the current state of trip data
     return jsonify(trip_data)
-

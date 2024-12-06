@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carputer Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        .card {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .card h3 {
+            margin-bottom: 10px;
+        }
+        .card p {
+            font-size: 1.2em;
+            margin: 0;
+        }
+        .controls button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #1e90ff;
+            border: none;
+            border-radius: 5px;
+            color: #ffffff;
+        }
+        .controls button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Carputer Dashboard</h1>
+    <div class="controls">
+        <button id="startBtn" onclick="startTrip()">Start</button>
+        <button id="stopBtn" onclick="stopTrip()" disabled>Stop</button>
+        <button id="resetBtn" onclick="resetTrip()" disabled>Reset</button>
+    </div>
+    <div class="dashboard" id="dashboard">
+        <!-- Cards for metrics will be dynamically added here -->
+    </div>
+
+    <script>
+        async function fetchMetrics() {
+            const dashboard = document.getElementById("dashboard");
+            try {
+                // Fetch trip metrics
+                const response = await fetch("/trip/metrics");
+                const data = await response.json();
+
+                // Update button states
+                document.getElementById("startBtn").disabled = data.running;
+                document.getElementById("stopBtn").disabled = !data.running;
+                document.getElementById("resetBtn").disabled = data.running;
+
+                // Clear the dashboard and display updated metrics
+                dashboard.innerHTML = "";
+                for (const [key, value] of Object.entries(data)) {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    card.innerHTML = `
+                        <h3>${key.replace("_", " ").toUpperCase()}</h3>
+                        <p>${value}</p>
+                    `;
+                    dashboard.appendChild(card);
+                }
+            } catch (error) {
+                console.error("Error fetching trip metrics:", error);
+            }
+        }
+
+        async function startTrip() {
+            await fetch("/trip/start", { method: "POST" });
+            fetchMetrics();
+        }
+
+        async function stopTrip() {
+            await fetch("/trip/stop", { method: "POST" });
+            fetchMetrics();
+        }
+
+        async function resetTrip() {
+            await fetch("/trip/reset", { method: "POST" });
+            fetchMetrics();
+        }
+
+        // Refresh metrics every 5 seconds
+        fetchMetrics();
+        setInterval(fetchMetrics, 5000);
+    </script>
+</body>
+</html>
+
