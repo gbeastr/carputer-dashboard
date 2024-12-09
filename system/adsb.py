@@ -3,21 +3,20 @@ import subprocess
 import threading
 from . import system_bp
 
-# Map of service names to their actual systemd unit names
 ADS_B_SERVICES = {
     "piaware": "piaware",
-    "dump1090": "dump1090-fa",  # Corrected service name
-    "dump978": "dump978-fa"     # Corrected service name
+    "dump1090": "dump1090-fa",
+    "dump978": "dump978-fa"
 }
 
 def check_service_status(service_name):
     """
-    Check the status of a service using systemctl.
-    Returns:
-        - "running" if the service is active.
-        - "stopped" if the service is inactive.
-        - "not found" if the service does not exist.
-        - "error" if an unexpected status occurs.
+    checks the status of a service using systemctl.
+    returns:
+        "running" if service is active
+        "stopped" if service is inactive
+        "not found" if service DNE (jerry core)
+        "error" for an unexpected state
     """
     try:
         result = subprocess.run(
@@ -36,10 +35,10 @@ def check_service_status(service_name):
 
 def restart_service(service_name):
     """
-    Restart a service using systemctl with sudo.
-    Returns:
-        - "restart successful" if the restart succeeds.
-        - "restart failed" if the restart fails.
+    restarts a failed/stopped service using systemctl with sudo
+    returns:
+        "restart successful" if service is running
+        "restart failed" if service is still stopped
     """
     print(f"Attempting to restart service: {service_name}")
     try:
@@ -60,7 +59,7 @@ def restart_service(service_name):
 
 def restart_failed_services(services):
     """
-    Background thread to restart services that are stopped or in error state.
+    background thread to restart services that are stopped or in error state
     """
     for service, status in services.items():
         if status in ["stopped", "error"]:
@@ -71,19 +70,18 @@ def restart_failed_services(services):
 @system_bp.route('/adsb', methods=['GET'])
 def adsb_metrics():
     """
-    Endpoint to return the status of ADS-B related services.
-    If a service is stopped or in error, a background thread attempts to restart it.
+    defines endpoint to return the status of ads-b related services.
     """
-    # Check the status of all services
+    # checks the status of all services
     services = {
         service: check_service_status(systemd_name)
         for service, systemd_name in ADS_B_SERVICES.items()
     }
 
-    # Start a background thread to restart any failed services
+    # background thread to restart failed/stopped services
     thread = threading.Thread(target=restart_failed_services, args=(services,))
     thread.start()
 
-    # Return the current status immediately
+    # returns current service statuses
     return jsonify(services)
 

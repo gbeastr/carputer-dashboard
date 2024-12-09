@@ -16,11 +16,11 @@ trip_data = {
     "last_lon": None,
     "cumulative_speed": 0.0,
     "speed_count": 0,
-    "max_speed": 0.0  # New field for max speed
+    "max_speed": 0.0
 }
 
 def haversine(lat1, lon1, lat2, lon2):
-    R = 3958.8  # Radius of Earth in miles
+    R = 3958.8 # radius of the earth :p
     dLat = math.radians(lat2 - lat1)
     dLon = math.radians(lon2 - lon1)
     a = (math.sin(dLat/2)**2) + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * (math.sin(dLon/2)**2)
@@ -32,7 +32,7 @@ def start_trip():
     if trip_data["running"]:
         return jsonify({"status": "trip already running"}), 400
     if trip_data["elapsed_time"] > 0 or trip_data["distance_covered"] > 0:
-        return jsonify({"status": "please reset trip before starting a new one"}), 400
+        return jsonify({"status": "reset trip before starting a new one"}), 400
 
     current_time = time.time()
     trip_data.update({
@@ -47,7 +47,7 @@ def start_trip():
         "last_update_time": current_time,
         "last_lat": None,
         "last_lon": None,
-        "max_speed": 0.0  # Reset max speed at start
+        "max_speed": 0.0
     })
     return jsonify({"status": "trip started"})
 
@@ -76,7 +76,7 @@ def reset_trip():
         "last_lon": None,
         "cumulative_speed": 0.0,
         "speed_count": 0,
-        "max_speed": 0.0  # Reset max speed
+        "max_speed": 0.0
     })
     return jsonify({"status": "trip reset"})
 
@@ -93,7 +93,7 @@ def get_metrics():
         lon = gps_data.get("longitude", None)
         speed_mph = gps_data.get("speed", 0)
 
-        # Update distance covered if we're moving
+        # update distance covered if speed > 0
         if (trip_data["last_lat"] is not None and
             trip_data["last_lon"] is not None and
             isinstance(lat, (float, int)) and
@@ -102,34 +102,34 @@ def get_metrics():
             if speed_mph > 0.1:
                 trip_data["distance_covered"] += dist
 
-        # Update moving average speed and max speed
+        # update moving average speed and max speed
         if speed_mph > 0.1:
             trip_data["cumulative_speed"] += speed_mph
             trip_data["speed_count"] += 1
             if trip_data["speed_count"] > 0:
                 trip_data["moving_average_speed"] = trip_data["cumulative_speed"] / trip_data["speed_count"]
-            
-            # Check if we have a new max speed
+
+            # check for new max speed
             if isinstance(speed_mph, (int, float)) and speed_mph > trip_data["max_speed"]:
                 trip_data["max_speed"] = speed_mph
         else:
-            # If not moving, increment stopped_time
+            # if not moving, update stopped_time
             trip_data["stopped_time"] += delta
 
-        # Update last known location and time
+        # update last known location and time
         if isinstance(lat, (float, int)) and isinstance(lon, (float, int)):
             trip_data["last_lat"] = lat
             trip_data["last_lon"] = lon
         trip_data["last_update_time"] = current_time
 
-    # Calculate overall average speed
+    # calculate overall average speed
     overall_average_speed = 0
     if trip_data["elapsed_time"] > 0:
         hours = trip_data["elapsed_time"] / 3600
         if hours > 0:
             overall_average_speed = trip_data["distance_covered"] / hours
 
-    # Calculate moving_time
+    # calculate moving_time
     moving_time = trip_data["elapsed_time"] - trip_data["stopped_time"]
     if moving_time < 0:
         moving_time = 0.0

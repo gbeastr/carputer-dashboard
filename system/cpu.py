@@ -7,7 +7,6 @@ def cpu_metrics():
     cpu_load = psutil.cpu_percent(interval=0)
     temperatures = psutil.sensors_temperatures()
 
-    # Safely get the CPU temperature
     cpu_temp = 'N/A'
     if 'cpu_thermal' in temperatures:
         cpu_temp = temperatures['cpu_thermal'][0].current
