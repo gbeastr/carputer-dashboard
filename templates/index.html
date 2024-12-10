@@ -1,137 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Carputer Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
+
     <style>
-        /* General Styling */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212; /* Very dark gray background */
-            color: #F8F9FA; /* Light gray text for readability */
+        html, body {
+            height: 100%;
             margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: #1c1c1c; 
+            color: #eeeeee;
             display: flex;
             flex-direction: column;
-            height: 100vh; /* Full viewport height */
+            font-weight: 700; /* Everything bold */
         }
 
         /* Header */
         .header {
-            flex: 0 0 auto;
             width: 100%;
-            background-color: #1e1e1e;
-            padding: 20px 0;
+            background: linear-gradient(to right, #222, #2b2b2b);
+            padding: 25px 0;
             text-align: center;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #F8F9FA;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            font-size: 2.5em;
+            color: #eeeeee;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            flex-shrink: 0;
         }
 
-        /* Main Dashboard Container */
+        /* Dashboard Container */
         .dashboard-container {
+            flex: 1;
             display: flex;
             justify-content: center;
             align-items: stretch;
             gap: 20px;
-            flex-grow: 1;
             width: 100%;
             padding: 20px 1%;
             box-sizing: border-box;
         }
 
-        /* Section Styling */
+        /* Section: Use a grid to evenly distribute vertical space */
         .section {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            background-color: #1e1e1e;
-            border-radius: 2px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            padding: 10px;
+            display: grid;
+            grid-template-rows: repeat(6, 1fr); /* 6 evenly distributed rows */
+            gap: 20px;
+            background-color: #262626;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        /* Box Styling */
-        .metric-row, .button-row {
+        .status, .metric {
             display: flex;
-            gap: 0px;
-            flex-grow: 1;
-        }
-
-        .metric-row {
-            justify-content: space-between;
-        }
-
-        .metric, .status {
-            flex: 1;
-            display: flex;
-            justify-content: center;
             align-items: center;
-            background-color: #2a2a2a;
-            border-radius: 2px;
-            font-size: 1em;
-            font-weight: bold;
-            text-transform: uppercase;
+            justify-content: center;
+            background-color: #2f2f2f;
+            border-radius: 3px;
+            font-size: 1.6em;
             text-align: center;
-            border: 4px solid #333;
-        }
-
-        .button-row button {
-            flex: 1;
-            padding: 10px;
-            font-size: 1em;
-            font-weight: bold;
-            text-transform: uppercase;
-            border: none;
-            border-radius: 2px;
-            cursor: pointer;
-        }
-
-        /* Colors for Buttons */
-        .start {
-            background-color: #28a745;
-            color: black;
-        }
-
-        .stop {
-            background-color: #dc3545;
-            color: black;
-        }
-
-        .reset {
-            background-color: #ffc107;
-            color: black;
-        }
-
-        .restart {
-            background-color: #17a2b8;
-            color: black;
-        }
-
-        .shutdown {
-            background-color: #dc3545;
-            color: black;
-        }
-
-        /* Indicator Dots */
-        .status-dot {
-            margin-left: 10px;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background-color: #00ff00;
-            display: inline-block;
+            border: 1px solid #3c3c3c;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .metric span,
         .status span {
+            margin-left: 0.5em;
             white-space: nowrap;
+            font-weight: 700; 
+        }
+
+        .metric-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .metric-row .metric {
+            flex: 1;
+        }
+
+        /* Status Dots */
+        .status-dot {
+            margin-left: 10px;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: #00ff00;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .button-row button {
+            flex: 1;
+            padding: 20px;
+            font-size: 1.4em;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: filter 0.2s ease;
+            font-weight: 700;
+        }
+
+        .button-row button:hover {
+            filter: brightness(110%);
+        }
+
+        /* Button Colors */
+        .start {
+            background-color: #28a745;
+            color: #000;
+        }
+
+        .stop {
+            background-color: #dc3545;
+            color: #000;
+        }
+
+        .reset {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .restart {
+            background-color: #17a2b8;
+            color: #000;
+        }
+
+        .shutdown {
+            background-color: #dc3545;
+            color: #000;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1000px) {
+            .dashboard-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .metric-row, .button-row {
+                flex-direction: column;
+                gap: 20px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Header with Date/Time -->
     <header class="header">
         <div id="dateTime"></div>
     </header>
@@ -139,23 +170,31 @@
     <div class="dashboard-container">
         <!-- Trip Computer Section -->
         <section class="section">
+            <!-- Row 1: Trip Status -->
             <div class="status">
-                <span>Trip Status:</span>
-                <span id="tripStatus">Stopped <span class="status-dot" id="tripStatusDot"></span></span>
+                TRIP STATUS:&nbsp;&nbsp;<span id="tripStatus">STOPPED</span>
+                <span class="status-dot" id="tripStatusDot"></span>
             </div>
-            <div class="metric">Speed: <span id="speed">--</span></div>
+            <!-- Row 2: Speed -->
+            <div class="metric">
+                SPEED:&nbsp;&nbsp;<span id="speed">--</span>
+            </div>
+            <!-- Row 3: Total Time & Overall Avg -->
             <div class="metric-row">
-                <div class="metric">Total Time: <span id="elapsed">--</span></div>
-                <div class="metric">Overall Avg: <span id="overallAvg">--</span></div>
+                <div class="metric">TOTAL TIME:&nbsp;&nbsp;<span id="elapsed">--</span></div>
+                <div class="metric">OVERALL AVG:&nbsp;&nbsp;<span id="overallAvg">--</span></div>
             </div>
+            <!-- Row 4: Moving Time & Moving Avg -->
             <div class="metric-row">
-                <div class="metric">Moving Time: <span id="movingTime">--</span></div>
-                <div class="metric">Moving Avg: <span id="movingAvg">--</span></div>
+                <div class="metric">MOVING TIME:&nbsp;&nbsp;<span id="movingTime">--</span></div>
+                <div class="metric">MOVING AVG:&nbsp;&nbsp;<span id="movingAvg">--</span></div>
             </div>
+            <!-- Row 5: Stopped Time & Max Speed -->
             <div class="metric-row">
-                <div class="metric">Stopped Time: <span id="stopped">--</span></div>
-                <div class="metric">Max Speed: <span id="maxSpeed">--</span></div>
+                <div class="metric">STOPPED TIME:&nbsp;&nbsp;<span id="stopped">--</span></div>
+                <div class="metric">MAX SPEED:&nbsp;&nbsp;<span id="maxSpeed">--</span></div>
             </div>
+            <!-- Row 6: Buttons -->
             <div class="button-row">
                 <button class="start" id="startBtn" onclick="startTrip()">Start Trip</button>
                 <button class="stop" id="stopBtn" onclick="stopTrip()" disabled>Stop Trip</button>
@@ -165,26 +204,32 @@
 
         <!-- System Status Section -->
         <section class="section">
+            <!-- Row 1: Carputer Status -->
             <div class="status">
-                <span>Carputer Status:</span>
-                <span id="carputerStatus">Online <span class="status-dot" id="carputerStatusDot"></span></span>
+                CARPUTER STATUS:&nbsp;&nbsp;ONLINE 
+                <span class="status-dot" id="carputerStatusDot"></span>
             </div>
+            <!-- Row 2: CPU Load & CPU Temp -->
             <div class="metric-row">
-                <div class="metric">CPU Load: <span id="cpuLoad">--%</span></div>
-                <div class="metric">CPU Temp: <span id="cpuTemp">--°C</span></div>
+                <div class="metric">CPU LOAD:&nbsp;&nbsp;<span id="cpuLoad">--%</span></div>
+                <div class="metric">CPU TEMP:&nbsp;&nbsp;<span id="cpuTemp">--°C</span></div>
             </div>
+            <!-- Row 3: GPSD & DUMP1090 -->
             <div class="metric-row">
-                <div class="metric">GPSD Status: <span id="gpsdStatus">--</span></div>
-                <div class="metric">Dump1090: <span class="status-dot" id="dump1090Status"></span></div>
+                <div class="metric">GPSD:&nbsp;&nbsp;<span class="status-dot" id="gpsdStatusDot"></span></div>
+                <div class="metric">DUMP1090:&nbsp;&nbsp;<span class="status-dot" id="dump1090Status"></span></div>
             </div>
+            <!-- Row 4: DUMP978 & PIAWARE -->
             <div class="metric-row">
-                <div class="metric">Dump978: <span class="status-dot" id="dump978Status"></span></div>
-                <div class="metric">PiAware: <span class="status-dot" id="piawareStatus"></span></div>
+                <div class="metric">DUMP978:&nbsp;&nbsp;<span class="status-dot" id="dump978Status"></span></div>
+                <div class="metric">PIAWARE:&nbsp;&nbsp;<span class="status-dot" id="piawareStatus"></span></div>
             </div>
+            <!-- Row 5: System Uptime & Satellites Locked -->
             <div class="metric-row">
-                <div class="metric">System Uptime: <span id="systemUptime">--</span></div>
-                <div class="metric">Satellites Locked: <span id="satellitesLocked">--</span></div>
+                <div class="metric">SYSTEM UPTIME:&nbsp;&nbsp;<span id="systemUptime">--</span></div>
+                <div class="metric">SATELLITES LOCKED:&nbsp;&nbsp;<span id="satellitesLocked">--</span></div>
             </div>
+            <!-- Row 6: Buttons -->
             <div class="button-row">
                 <button class="restart" id="restartBtn">Restart Carputer</button>
                 <button class="shutdown" id="shutdownBtn">Shutdown Carputer</button>
@@ -195,17 +240,16 @@
     <script>
         function updateDateTime() {
             const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit', 
-                hour12: true 
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
             };
-            // Append "(EST)" to the formatted string (assuming server/client in EST)
             const formatted = now.toLocaleString('en-US', options) + ' (EST)';
             document.getElementById("dateTime").textContent = formatted;
         }
@@ -238,22 +282,22 @@
                 document.getElementById("resetBtn").disabled = tripData.running;
 
                 // Trip Status
-                const tripStatus = tripData.running ? "Running" : "Stopped";
-                document.getElementById("tripStatus").innerHTML = `${tripStatus} <span class="status-dot" id="tripStatusDot"></span>`;
+                const tripStatus = tripData.running ? "RUNNING" : "STOPPED";
+                document.getElementById("tripStatus").textContent = tripStatus;
                 document.getElementById("tripStatusDot").style.backgroundColor = tripData.running ? "#00ff00" : "#dc3545";
 
                 // Speed and Metrics
-                const speedVal = (typeof gpsData.speed === 'number') ? `${gpsData.speed.toFixed(2)} MPH` : 'N/A';
+                const speedVal = (typeof gpsData.speed === 'number') ? `${gpsData.speed.toFixed(2)} MPH` : '--';
                 document.getElementById("speed").textContent = speedVal;
                 document.getElementById("elapsed").textContent = formatTime(tripData.elapsed_time);
                 document.getElementById("overallAvg").textContent = `${tripData.overall_average_speed.toFixed(2)} MPH`;
                 document.getElementById("stopped").textContent = formatTime(tripData.stopped_time);
                 document.getElementById("movingAvg").textContent = `${tripData.moving_average_speed.toFixed(2)} MPH`;
                 document.getElementById("movingTime").textContent = formatTime(tripData.moving_time);
-                document.getElementById("maxSpeed").textContent = (tripData.max_speed > 0) ? `${tripData.max_speed.toFixed(2)} MPH` : 'N/A';
+                document.getElementById("maxSpeed").textContent = (tripData.max_speed > 0) ? `${tripData.max_speed.toFixed(2)} MPH` : '--';
 
                 // Satellites
-                const satellites = (gpsData.satellites_used !== undefined) ? gpsData.satellites_used : 'N/A';
+                const satellites = (gpsData.satellites_used !== undefined) ? gpsData.satellites_used : '--';
                 document.getElementById("satellitesLocked").textContent = satellites;
 
                 // Fetch system data
@@ -275,7 +319,7 @@
                 document.getElementById("cpuLoad").textContent = `${cpuData.cpu_load.toFixed(2)}%`;
                 document.getElementById("cpuTemp").textContent = (cpuData.cpu_temperature !== 'N/A')
                     ? `${cpuData.cpu_temperature.toFixed(1)}°C`
-                    : 'N/A';
+                    : '--';
 
                 // ADS-B Services
                 function updateServiceDot(elementId, status) {
@@ -287,11 +331,11 @@
                 updateServiceDot("dump978Status", adsbData.dump978);
                 updateServiceDot("piawareStatus", adsbData.piaware);
 
-                // GPSD Status
-                document.getElementById("gpsdStatus").textContent = (gpsData.status === "connected") ? "Connected" : "No Fix";
+                // GPSD status: "connected" = running, else stopped
+                const gpsdStatus = (gpsData.status === "connected") ? "running" : "stopped";
+                updateServiceDot("gpsdStatusDot", gpsdStatus);
 
-                // Carputer Status
-                document.getElementById("carputerStatus").innerHTML = `Online <span class="status-dot" id="carputerStatusDot"></span>`;
+                // Carputer Status Dot
                 document.getElementById("carputerStatusDot").style.backgroundColor = "#00ff00";
 
             } catch (error) {
