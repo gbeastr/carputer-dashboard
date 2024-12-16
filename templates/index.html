@@ -16,11 +16,11 @@
 
         body {
             font-family: 'Roboto Condensed', sans-serif;
-            background-color: #1c1c1c; 
+            background-color: #1c1c1c;
             color: #eeeeee;
             display: flex;
             flex-direction: column;
-            font-weight: 700; /* Everything bold */
+            font-weight: 700;
         }
 
         /* Header */
@@ -33,6 +33,7 @@
             color: #eeeeee;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
             flex-shrink: 0;
+            cursor: pointer; /* For timezone toggle */
         }
 
         /* Dashboard Container */
@@ -43,72 +44,96 @@
             align-items: stretch;
             gap: 20px;
             width: 100%;
-            padding: 20px 1%;
+            padding: 10px 1%; 
             box-sizing: border-box;
         }
 
-        /* Section: Use a grid to evenly distribute vertical space */
         .section {
             flex: 1;
             display: grid;
-            grid-template-rows: repeat(6, 1fr); /* 6 evenly distributed rows */
-            gap: 20px;
+            grid-template-rows: repeat(5, 1fr);
+            gap: 10px; 
             background-color: #262626;
             border-radius: 4px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            padding: 20px;
+            padding: 10px; 
             box-sizing: border-box;
         }
 
-        .status, .metric {
+        .metric {
+            display: flex;
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center;
+            background-color: #2f2f2f;
+            border-radius: 3px;
+            border: 1px solid #3c3c3c;
+            padding: 10px; 
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .field-label {
+            font-size: 1.0em;
+            white-space: nowrap;
+            margin-bottom: 5px; 
+        }
+
+        .field-value {
+            font-size: 2.5em; 
+            white-space: nowrap;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #2f2f2f;
-            border-radius: 3px;
-            font-size: 1.6em;
-            text-align: center;
-            border: 1px solid #3c3c3c;
-            padding: 20px;
-            box-sizing: border-box;
+            gap: 5px; 
         }
 
-        .metric span,
-        .status span {
-            margin-left: 0.5em;
-            white-space: nowrap;
-            font-weight: 700; 
+        .field-unit {
+            font-size: 0.7em;
+            opacity: 0.8;
+        }
+
+        .status-dot {
+            width: 20px; 
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Blinking animation with no fade: steps(2) means it jumps instantly at 50% */
+        @keyframes blink {
+            0% { opacity:1; }
+            50% { opacity:0; }
+            100% { opacity:1; }
+        }
+
+        .blinking {
+            animation: blink 1s steps(2, end);
         }
 
         .metric-row {
             display: flex;
-            gap: 20px;
+            gap: 10px; 
         }
 
         .metric-row .metric {
             flex: 1;
         }
 
-        /* Status Dots */
-        .status-dot {
-            margin-left: 10px;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            background-color: #00ff00;
-            display: inline-block;
-            vertical-align: middle;
+        .service-box {
+            aspect-ratio: 1 / 1; 
         }
 
         .button-row {
             display: flex;
-            gap: 20px;
+            gap: 10px; 
         }
 
         .button-row button {
             flex: 1;
-            padding: 20px;
-            font-size: 1.4em;
+            padding: 10px;
+            font-size: 1.0em;
             text-transform: uppercase;
             border: none;
             border-radius: 3px;
@@ -147,97 +172,155 @@
             color: #000;
         }
 
-        /* Responsive adjustments */
         @media (max-width: 1000px) {
             .dashboard-container {
                 flex-direction: column;
-                gap: 20px;
+                gap: 10px;
             }
 
             .metric-row, .button-row {
                 flex-direction: column;
-                gap: 20px;
+                gap: 10px;
             }
         }
     </style>
 </head>
 <body>
     <!-- Header with Date/Time -->
-    <header class="header">
-        <div id="dateTime"></div>
-    </header>
+    <header class="header" id="dateTime"></header>
 
     <div class="dashboard-container">
         <!-- Trip Computer Section -->
         <section class="section">
-            <!-- Row 1: Trip Status -->
-            <div class="status">
-                TRIP STATUS:&nbsp;&nbsp;<span id="tripStatus">STOPPED</span>
-                <span class="status-dot" id="tripStatusDot"></span>
-            </div>
-            <!-- Row 2: Speed -->
-            <div class="metric">
-                SPEED:&nbsp;&nbsp;<span id="speed">--</span>
-            </div>
-            <!-- Row 3: Total Time & Overall Avg -->
+            <!-- Row 1: Trip Status & Speed side-by-side -->
             <div class="metric-row">
-                <div class="metric">TOTAL TIME:&nbsp;&nbsp;<span id="elapsed">--</span></div>
-                <div class="metric">OVERALL AVG:&nbsp;&nbsp;<span id="overallAvg">--</span></div>
+                <div class="metric">
+                    <span class="field-label">TRIP STATUS</span>
+                    <span class="field-value">
+                        <span id="tripStatus">STOPPED</span>
+                        <span class="status-dot" id="tripStatusDot"></span>
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="field-label">SPEED</span>
+                    <span class="field-value" id="speed">--</span>
+                </div>
             </div>
-            <!-- Row 4: Moving Time & Moving Avg -->
+            <!-- Row 2: Elapsed & Distance -->
             <div class="metric-row">
-                <div class="metric">MOVING TIME:&nbsp;&nbsp;<span id="movingTime">--</span></div>
-                <div class="metric">MOVING AVG:&nbsp;&nbsp;<span id="movingAvg">--</span></div>
+                <div class="metric">
+                    <span class="field-label">ELAPSED</span>
+                    <span class="field-value" id="elapsed">--</span>
+                </div>
+                <div class="metric">
+                    <span class="field-label">DISTANCE</span>
+                    <span class="field-value" id="distanceCovered">--</span>
+                </div>
             </div>
-            <!-- Row 5: Stopped Time & Max Speed -->
+            <!-- Row 3: Overall Avg & Moving Avg -->
             <div class="metric-row">
-                <div class="metric">STOPPED TIME:&nbsp;&nbsp;<span id="stopped">--</span></div>
-                <div class="metric">MAX SPEED:&nbsp;&nbsp;<span id="maxSpeed">--</span></div>
+                <div class="metric">
+                    <span class="field-label">OVERALL AVG</span>
+                    <span class="field-value" id="overallAvg">--</span>
+                </div>
+                <div class="metric">
+                    <span class="field-label">MOVING AVG</span>
+                    <span class="field-value" id="movingAvg">--</span>
+                </div>
             </div>
-            <!-- Row 6: Buttons -->
+            <!-- Row 4: Stopped & Max MPH -->
+            <div class="metric-row">
+                <div class="metric">
+                    <span class="field-label">STOPPED</span>
+                    <span class="field-value" id="stopped">--</span>
+                </div>
+                <div class="metric">
+                    <span class="field-label">MAX MPH</span>
+                    <span class="field-value" id="maxSpeed">--</span>
+                </div>
+            </div>
+            <!-- Row 5: Buttons -->
             <div class="button-row">
-                <button class="start" id="startBtn" onclick="startTrip()">Start Trip</button>
-                <button class="stop" id="stopBtn" onclick="stopTrip()" disabled>Stop Trip</button>
-                <button class="reset" id="resetBtn" onclick="resetTrip()" disabled>Reset Trip</button>
+                <button class="start" id="startBtn" onclick="startTrip()">Start</button>
+                <button class="stop" id="stopBtn" onclick="stopTrip()" disabled>Stop</button>
+                <button class="reset" id="resetBtn" onclick="resetTrip()" disabled>Reset</button>
             </div>
         </section>
 
         <!-- System Status Section -->
         <section class="section">
             <!-- Row 1: Carputer Status -->
-            <div class="status">
-                CARPUTER STATUS:&nbsp;&nbsp;ONLINE 
-                <span class="status-dot" id="carputerStatusDot"></span>
+            <div class="metric">
+                <span class="field-label">CARPUTER</span>
+                <span class="field-value">
+                    <span>ONLINE</span>
+                    <span class="status-dot" id="carputerStatusDot"></span>
+                </span>
             </div>
             <!-- Row 2: CPU Load & CPU Temp -->
             <div class="metric-row">
-                <div class="metric">CPU LOAD:&nbsp;&nbsp;<span id="cpuLoad">--%</span></div>
-                <div class="metric">CPU TEMP:&nbsp;&nbsp;<span id="cpuTemp">--°C</span></div>
+                <div class="metric">
+                    <span class="field-label">CPU LOAD</span>
+                    <span class="field-value" id="cpuLoad">--</span>
+                </div>
+                <div class="metric">
+                    <span class="field-label">CPU TEMP</span>
+                    <span class="field-value" id="cpuTemp">--</span>
+                </div>
             </div>
-            <!-- Row 3: GPSD & DUMP1090 -->
+            <!-- Row 3: Services -->
             <div class="metric-row">
-                <div class="metric">GPSD:&nbsp;&nbsp;<span class="status-dot" id="gpsdStatusDot"></span></div>
-                <div class="metric">DUMP1090:&nbsp;&nbsp;<span class="status-dot" id="dump1090Status"></span></div>
+                <div class="metric service-box" id="gpsdBox">
+                    <span class="field-label" id="gpsdLabel">GPSD</span>
+                </div>
+                <div class="metric service-box" id="dump1090Box">
+                    <span class="field-label" id="dump1090Label">DUMP1090</span>
+                </div>
+                <div class="metric service-box" id="dump978Box">
+                    <span class="field-label" id="dump978Label">DUMP978</span>
+                </div>
+                <div class="metric service-box" id="piawareBox">
+                    <span class="field-label" id="piawareLabel">PIAWARE</span>
+                </div>
             </div>
-            <!-- Row 4: DUMP978 & PIAWARE -->
+            <!-- Row 4: Uptime & Satellites Locked -->
             <div class="metric-row">
-                <div class="metric">DUMP978:&nbsp;&nbsp;<span class="status-dot" id="dump978Status"></span></div>
-                <div class="metric">PIAWARE:&nbsp;&nbsp;<span class="status-dot" id="piawareStatus"></span></div>
+                <div class="metric">
+                    <span class="field-label">UPTIME</span>
+                    <span class="field-value" id="systemUptime">--</span>
+                </div>
+                <div class="metric">
+                    <span class="field-label">SATS LOCKED</span>
+                    <span class="field-value" id="satellitesLocked">--</span>
+                </div>
             </div>
-            <!-- Row 5: System Uptime & Satellites Locked -->
-            <div class="metric-row">
-                <div class="metric">SYSTEM UPTIME:&nbsp;&nbsp;<span id="systemUptime">--</span></div>
-                <div class="metric">SATELLITES LOCKED:&nbsp;&nbsp;<span id="satellitesLocked">--</span></div>
-            </div>
-            <!-- Row 6: Buttons -->
+            <!-- Row 5: Buttons -->
             <div class="button-row">
-                <button class="restart" id="restartBtn">Restart Carputer</button>
-                <button class="shutdown" id="shutdownBtn">Shutdown Carputer</button>
+                <button class="restart" id="restartBtn" onclick="restartCarputer()">Restart</button>
+                <button class="shutdown" id="shutdownBtn" onclick="shutdownCarputer()">Shutdown</button>
             </div>
         </section>
     </div>
 
     <script>
+        const timeZones = [
+            "America/New_York",    // EST/EDT
+            "America/Chicago",     // CST/CDT
+            "America/Los_Angeles"  // PST/PDT
+        ];
+
+        const zoneAbbreviations = {
+            "America/New_York": "EST",
+            "America/Chicago": "CST",
+            "America/Los_Angeles": "PST"
+        };
+
+        let currentTimeZoneIndex = 0;
+
+        document.getElementById("dateTime").addEventListener("click", () => {
+            currentTimeZoneIndex = (currentTimeZoneIndex + 1) % timeZones.length;
+        });
+
         function updateDateTime() {
             const now = new Date();
             const options = {
@@ -248,9 +331,12 @@
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
-                hour12: true
+                hour12: true,
+                timeZone: timeZones[currentTimeZoneIndex]
             };
-            const formatted = now.toLocaleString('en-US', options) + ' (EST)';
+
+            const abbreviation = zoneAbbreviations[timeZones[currentTimeZoneIndex]] || "";
+            const formatted = now.toLocaleString('en-US', options) + (abbreviation ? ` (${abbreviation})` : "");
             document.getElementById("dateTime").textContent = formatted;
         }
 
@@ -276,31 +362,42 @@
                     gpsResponse.json()
                 ]);
 
-                // Buttons
+                // Update buttons
                 document.getElementById("startBtn").disabled = tripData.running;
                 document.getElementById("stopBtn").disabled = !tripData.running;
                 document.getElementById("resetBtn").disabled = tripData.running;
 
-                // Trip Status
+                // Trip Status Dot
+                const tripStatusDot = document.getElementById("tripStatusDot");
+                const tripStatusElem = document.getElementById("tripStatus");
                 const tripStatus = tripData.running ? "RUNNING" : "STOPPED";
-                document.getElementById("tripStatus").textContent = tripStatus;
-                document.getElementById("tripStatusDot").style.backgroundColor = tripData.running ? "#00ff00" : "#dc3545";
+                tripStatusElem.textContent = tripStatus;
+                if (tripData.running) {
+                    tripStatusDot.style.backgroundColor = "#00ff00";
+                } else {
+                    tripStatusDot.style.backgroundColor = "#dc3545";
+                }
 
                 // Speed and Metrics
-                const speedVal = (typeof gpsData.speed === 'number') ? `${gpsData.speed.toFixed(2)} MPH` : '--';
-                document.getElementById("speed").textContent = speedVal;
+                if (typeof gpsData.speed === 'number') {
+                    const speedVal = gpsData.speed.toFixed(2);
+                    document.getElementById("speed").innerHTML = `${speedVal}<span class="field-unit">MPH</span>`;
+                } else {
+                    document.getElementById("speed").textContent = '--';
+                }
+
                 document.getElementById("elapsed").textContent = formatTime(tripData.elapsed_time);
-                document.getElementById("overallAvg").textContent = `${tripData.overall_average_speed.toFixed(2)} MPH`;
+                document.getElementById("overallAvg").textContent = tripData.overall_average_speed.toFixed(2);
                 document.getElementById("stopped").textContent = formatTime(tripData.stopped_time);
-                document.getElementById("movingAvg").textContent = `${tripData.moving_average_speed.toFixed(2)} MPH`;
-                document.getElementById("movingTime").textContent = formatTime(tripData.moving_time);
-                document.getElementById("maxSpeed").textContent = (tripData.max_speed > 0) ? `${tripData.max_speed.toFixed(2)} MPH` : '--';
+                document.getElementById("movingAvg").textContent = tripData.moving_average_speed.toFixed(2);
+                document.getElementById("distanceCovered").textContent = `${tripData.distance_covered.toFixed(2)} mi`;
+                document.getElementById("maxSpeed").textContent = (tripData.max_speed > 0) ? tripData.max_speed.toFixed(2) : '--';
 
                 // Satellites
                 const satellites = (gpsData.satellites_used !== undefined) ? gpsData.satellites_used : '--';
                 document.getElementById("satellitesLocked").textContent = satellites;
 
-                // Fetch system data
+                // System Data
                 const [uptimeResp, cpuResp, adsbResp] = await Promise.all([
                     fetch("/system/uptime"),
                     fetch("/system/cpu"),
@@ -312,31 +409,47 @@
                     adsbResp.json()
                 ]);
 
-                // System Uptime
                 document.getElementById("systemUptime").textContent = formatTime(uptimeData.uptime_seconds);
-
-                // CPU Metrics
-                document.getElementById("cpuLoad").textContent = `${cpuData.cpu_load.toFixed(2)}%`;
+                document.getElementById("cpuLoad").textContent = cpuData.cpu_load.toFixed(2) + "%";
                 document.getElementById("cpuTemp").textContent = (cpuData.cpu_temperature !== 'N/A')
-                    ? `${cpuData.cpu_temperature.toFixed(1)}°C`
+                    ? cpuData.cpu_temperature.toFixed(1) + "°C"
                     : '--';
 
-                // ADS-B Services
-                function updateServiceDot(elementId, status) {
-                    const elem = document.getElementById(elementId);
-                    elem.style.backgroundColor = (status === 'running') ? "#00ff00" : "#dc3545";
+                // Carputer Status Dot
+                const carputerStatusDot = document.getElementById("carputerStatusDot");
+                // Assume ONLINE always for demonstration
+                carputerStatusDot.style.backgroundColor = "#00ff00";
+
+                // Services color
+                function updateServiceColor(labelId, status) {
+                    const labelElem = document.getElementById(labelId);
+                    if (status === 'running') {
+                        labelElem.style.color = '#00ff00';
+                    } else {
+                        labelElem.style.color = '#dc3545';
+                    }
                 }
 
-                updateServiceDot("dump1090Status", adsbData.dump1090);
-                updateServiceDot("dump978Status", adsbData.dump978);
-                updateServiceDot("piawareStatus", adsbData.piaware);
+                const gpsdStatus = (gpsData.status === 'connected') ? 'running' : 'stopped';
+                updateServiceColor("gpsdLabel", gpsdStatus);
+                updateServiceColor("dump1090Label", adsbData.dump1090);
+                updateServiceColor("dump978Label", adsbData.dump978);
+                updateServiceColor("piawareLabel", adsbData.piaware);
 
-                // GPSD status: "connected" = running, else stopped
-                const gpsdStatus = (gpsData.status === "connected") ? "running" : "stopped";
-                updateServiceDot("gpsdStatusDot", gpsdStatus);
+                // Blink indicators only on successful update, if running/online
+                // Remove old blink classes first
+                tripStatusDot.classList.remove("blinking");
+                carputerStatusDot.classList.remove("blinking");
 
-                // Carputer Status Dot
-                document.getElementById("carputerStatusDot").style.backgroundColor = "#00ff00";
+                // If trip running, blink tripStatusDot once
+                if (tripData.running) {
+                    tripStatusDot.classList.add("blinking");
+                    setTimeout(() => tripStatusDot.classList.remove("blinking"), 1000);
+                }
+
+                // Carputer online - blink once per update
+                carputerStatusDot.classList.add("blinking");
+                setTimeout(() => carputerStatusDot.classList.remove("blinking"), 1000);
 
             } catch (error) {
                 console.error("Error fetching metrics:", error);
@@ -344,18 +457,31 @@
         }
 
         async function startTrip() {
+            if (!confirm("Are you sure you want to start the trip?")) return;
             await fetch("/trip/start", { method: "POST" });
             fetchMetrics();
         }
 
         async function stopTrip() {
+            if (!confirm("Are you sure you want to stop the trip?")) return;
             await fetch("/trip/stop", { method: "POST" });
             fetchMetrics();
         }
 
         async function resetTrip() {
+            if (!confirm("Are you sure you want to reset the trip? This will clear all data.")) return;
             await fetch("/trip/reset", { method: "POST" });
             fetchMetrics();
+        }
+
+        async function restartCarputer() {
+            if (!confirm("Are you sure you want to restart the Carputer?")) return;
+            await fetch("/system/restart", { method: "POST" });
+        }
+
+        async function shutdownCarputer() {
+            if (!confirm("Are you sure you want to shutdown the Carputer?")) return;
+            await fetch("/system/shutdown", { method: "POST" });
         }
 
         fetchMetrics();

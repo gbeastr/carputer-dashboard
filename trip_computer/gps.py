@@ -1,9 +1,11 @@
+# gps.py
+
 import gps
 import threading
 from flask import jsonify
 from . import trip_bp
 
-# define GPS data dictionary
+# Shared GPS data dictionary
 gps_data = {
     "status": "no fix",
     "satellites_used": 0,
@@ -18,16 +20,13 @@ gps_data = {
 
 def gps_polling():
     """
-    background thread function to continuously read GPS data.
+    Background thread function to continuously read GPS data.
     """
-    # create a gpsd session
     session = gps.gps(mode=gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
     while True:
         try:
-            # wait for the next report from the GPS daemon
             report = session.next()
 
-            # handle TPV reports
             if report['class'] == 'TPV':
                 if getattr(report, 'mode', 1) >= 2:
                     gps_data["status"] = "connected"
@@ -38,43 +37,34 @@ def gps_polling():
                     gps_data["heading"] = getattr(report, 'track', 'N/A')
                     gps_data["timestamp"] = getattr(report, 'time', 'N/A')
                     gps_data["horizontal_accuracy"] = getattr(report, 'epx', 'N/A')
+
+                    # Convert speed from m/s to mph if it's numeric
+                    if isinstance(gps_data["speed"], (int, float)):
+                        gps_data["speed"] = gps_data["speed"] * 2.237
                 else:
                     gps_data["status"] = "no fix"
 
-            # handle SKY reports (only for uSat)
             elif report['class'] == 'SKY':
                 gps_data["satellites_used"] = report.get('uSat', 0)
 
         except KeyError:
-            # handle missing data in the report
             continue
         except StopIteration:
-            # GPSD has terminated
             print("GPSD has terminated")
             break
         except Exception as e:
             print(f"Error in GPS polling thread: {e}")
             break
 
-# start the GPS polling thread
 gps_thread = threading.Thread(target=gps_polling, daemon=True)
 gps_thread.start()
 
 @trip_bp.route('/gps', methods=['GET'])
 def gps_metrics():
     """
-    GPS endpoint to fetch real-time GPS data
+    GPS endpoint to fetch real-time GPS data, already in MPH.
     """
-    # make a copy of the GPS data to avoid threading issues
     output_data = gps_data.copy()
-
-    # convert speed from m/s to mph
-    speed = output_data.get('speed', 'N/A')
-    if isinstance(speed, (int, float)):
-        output_data['speed'] = speed * 2.237
-    else:
-        output_data['speed'] = 'N/A'
-
-    # format the data for JSON response
+    # gps_data now already stores speed in MPH, so no need to re-convert here.
     return jsonify(output_data)
 
