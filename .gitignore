@@ -1,4 +1,5 @@
 # Ignore virtual environment
+clean_env/
 venv/
 .env
 
