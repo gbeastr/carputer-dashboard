@@ -7,8 +7,11 @@ Flask based web app to display important status information while driving includ
 ## How It Works
 
 **Web Server:** Flask-based server runs on a rpi 5, providing data endpoints that the front end calls to display data.
+
 **Data Collection:** Metrics are collected from a u-blox gps, 2x noolec sdrs running piaware, and rpi 5 system monitoring tools like psutil.
+
 **Dashboard:** Frontend displays trip-specific metrics (elapsed time, distance, speed, etc) and system status indicators (CPU load, temp, uptime, etc)
+
 **User Interaction:** Buttons on the frontend to start, stop, and reset the trip calculations, while visual indicators provide real-time status updates.
 
 ---
